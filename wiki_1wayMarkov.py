@@ -36,6 +36,8 @@ class Markov_1:
 wiki_file_path_list = glob.glob("./wikipedia/doc/*/*")
 wiki_file_nom = len(wiki_file_path_list)
 
+m1 = Markov_1()
+
 for progress, wiki_file_path in enumerate(wiki_file_path_list):
     print("\b" * 20, end="", flush=True)
     print(progress, end="", flush=True)
@@ -93,6 +95,7 @@ for progress, wiki_file_path in enumerate(wiki_file_path_list):
                 sentence = []
 
     # ## 遷移頻度を出す
+    m1.add_frequency(wiki_file_sentence_mecab)
     """
     for sentence in wiki_file_sentence_mecab:
         for i in range(len(sentence)):
@@ -105,6 +108,7 @@ for progress, wiki_file_path in enumerate(wiki_file_path_list):
                     transition_frequency[sentence[i][0]][sentence[i + 1][0]] += 1
     """
 # # 遷移頻度を確率に直す
+m1.set_transition_frequency()
 """
 for i in transition_frequency:
     sum = 0
@@ -115,7 +119,9 @@ for i in transition_frequency:
         nextword_probability[j] = transition_frequency[i][j] / sum
     transition_probability[i] = nextword_probability
 """
-# # 
+# # 出力
+
+for i
 
 
 
