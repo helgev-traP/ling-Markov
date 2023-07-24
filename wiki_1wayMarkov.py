@@ -4,9 +4,32 @@ import MeCab
 
 # 出現頻度の格納
 
-transition_frequency = dict()
-# transition_frequency["単語"][次に続く単語] == 頻度
-transition_probability = dict()
+class Markov_1:
+    def __init__(self):
+        self.transition_frequency = dict()
+        # transition_frequency["単語"][次に続く単語] == 頻度
+        self.transition_probability = dict()
+
+    def add_frequency(self, sentences):
+        for s in sentences:
+            for i in range(len(s)):
+                if i != len(s) - 1:
+                    if s[i][0] not in self.transition_frequency:
+                        self.transition_frequency[sentence[i][0]] = {s[i + 1][0]: 1}
+                    elif s[i + 1][0] not in self.transition_frequency[s[i][0]]:
+                        self.transition_frequency[s[i][0]][s[i + 1][0]] = 1
+                    else:
+                        self.transition_frequency[s[i][0]][s[i + 1][0]] += 1
+
+    def set_transition_probability(self):
+        for i in self.transition_frequency:
+        sum = 0
+        nextword_probability = dict()
+        for j in self.transition_frequwncy[i]:
+            sum += self.transition_frequency[i][j]
+        for j in self.transition_frequency[i]:
+            nextword_probability[j] = self.transition_frequency[i][j] / sum
+        self.transition_probability[i] = nextword_probability
 
 # # wikiから遷移頻度を抽出
 
@@ -70,6 +93,7 @@ for progress, wiki_file_path in enumerate(wiki_file_path_list):
                 sentence = []
 
     # ## 遷移頻度を出す
+    """
     for sentence in wiki_file_sentence_mecab:
         for i in range(len(sentence)):
             if i != len(sentence) - 1:
@@ -79,5 +103,20 @@ for progress, wiki_file_path in enumerate(wiki_file_path_list):
                     transition_frequency[sentence[i][0]][sentence[i + 1][0]] = 1
                 else:
                     transition_frequency[sentence[i][0]][sentence[i + 1][0]] += 1
-
+    """
 # # 遷移頻度を確率に直す
+"""
+for i in transition_frequency:
+    sum = 0
+    nextword_probability = dict()
+    for j in transition_frequwncy[i]:
+        sum += transition_frequency[i][j]
+    for j in transition_frequency[i]:
+        nextword_probability[j] = transition_frequency[i][j] / sum
+    transition_probability[i] = nextword_probability
+"""
+# # 
+
+
+
+
