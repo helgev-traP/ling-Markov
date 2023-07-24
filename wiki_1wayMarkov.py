@@ -165,9 +165,9 @@ class Markov_n:
                 rund = random.random()
                 accu = 0.0
                 for j in self.transition_p[current_n_gram]:
-                    accu += self.transition_p[j]
+                    accu += self.transition_p[current_n_gram][j]
                     if accu > rund:
-                        next_word = j.split(" ")[self.order - 1]
+                        next_word = j
                         n_gram = current_n_gram.split(" ")
                         n_gram.pop(0)
                         n_gram.append(next_word)
@@ -177,7 +177,7 @@ class Markov_n:
                         break
                 if next_word == "。":
                     return next_word
-                result = self.generate(next_n_gram)
+                result = self.recursive(next_n_gram)
                 if result != "\\faile":
                     return next_word + result
             return "\\faile"
@@ -216,6 +216,18 @@ class Markov_n:
 
         return first_word + result
 
+    def output(self, path):
+        json = ""
+        json += "{begin_p:"
+        json += "{"
+        for i in self.begin_p:
+            json += '"' + i + '"' + ":" + str(self.begin_p[i]) + ","
+        json += "}"
+        json += "}"
+
+        with open(path, mode="w") as f:
+            f.write(json)
+
 
 # # wikiから遷移頻度を抽出
 
@@ -223,8 +235,9 @@ wiki_file_path_list = glob.glob("./wikipedia/doc/*/*")
 wiki_file_nom = len(wiki_file_path_list)
 
 markov_data = Markov_n()
-markov_data.set_order(3)
-limit = 1
+markov_data.set_order(4)
+limit = 5
+
 print("wiki読み込み\n進捗\t/ 設定上限\t/ 全データページ数")
 for progress, wiki_file_path in enumerate(wiki_file_path_list):
     if progress >= limit:
@@ -266,6 +279,8 @@ for progress, wiki_file_path in enumerate(wiki_file_path_list):
         # 鍵括弧の削除
         wiki_file_lines[i] = re.sub("「", "", wiki_file_lines[i])
         wiki_file_lines[i] = re.sub("」", "", wiki_file_lines[i])
+        wiki_file_lines[i] = re.sub("『", "", wiki_file_lines[i])
+        wiki_file_lines[i] = re.sub("』", "", wiki_file_lines[i])
 
     # ## MeCabにぶち込む
     wiki_file_line_mecab = []
@@ -302,5 +317,8 @@ print()
 # # 遷移頻度を確率に直す
 markov_data.set_transition_probability()
 
+markov_data.output("test.json")
+
 # # 出力
-print(markov_data.generate(number_of_trials=5))
+for i in range(int(input("出力数"))):
+    print(markov_data.generate(number_of_trials=200))
