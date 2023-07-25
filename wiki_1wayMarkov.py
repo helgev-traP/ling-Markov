@@ -310,6 +310,9 @@ class Markov_random_n:
     def set_min_order(self, n):
         self.min_order = n
 
+    def set_threshold(self, x):
+        self.threshold = x
+
     def add_frequency(self, sentences):
         if self.lorder <= 0:
             raise ValueError("set order")
@@ -501,8 +504,8 @@ wiki_file_path_list = glob.glob("./wikipedia/doc/*/*")
 wiki_file_nom = len(wiki_file_path_list)
 
 markov_data = Markov_random_n()
-markov_data.set_order(4)
-limit = 5
+markov_data.set_order(5)
+limit = 20
 
 # 読み込みの偏りを防ぐためwiki_file_path_listの内容をシャッフル
 random.shuffle(wiki_file_path_list)
@@ -592,5 +595,9 @@ print()
 markov_data.set_transition_probability()
 
 # # 出力
+markov_data.set_min_order(2)
+markov_data.set_threshold(0.0001)
+print("order: ",end="")
+print(markov_data.lorder)
 for i in range(int(input("出力数"))):
     print(markov_data.generate(number_of_trials=10))
