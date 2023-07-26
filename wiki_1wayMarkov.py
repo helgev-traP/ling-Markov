@@ -3,13 +3,15 @@
 mecab-python3 1.0.6
 unidic-lite   1.0.8
 を使用。
+
+読み込むwikipediaのデータはwikiextractorを使用し整形ののち、<doc>タグや学習の妨げとなる括弧などを消去している
 """
 import glob
 import re
 import MeCab
 import random
 
-# # 出現頻度の格納
+# # 出現頻度などのデータの格納
 
 
 class Markov_1:
@@ -270,9 +272,7 @@ class Markov_n:
 class Markov_random_n:
     def __init__(self) -> None:
         # 階数(順方向)
-        self.lorder = 5
-        # 階数(逆方向)
-        self.rorder = 5
+        self.order = 5
         # 最小階数
         self.min_order = 2
         # 試行回数
@@ -293,19 +293,13 @@ class Markov_random_n:
         self.begin_p = dict()
 
     def set_order(self, n):
-        self.set_lorder(n)
-        self.set_rorder(n)
-
-    def set_lorder(self, n):
-        self.lorder = n
+        self.order = n
         for i in range(n):
             self.transition_f[i + 1] = dict()
             self.transition_p[i + 1] = dict()
             self.begin_f[i + 1] = dict()
             self.begin_p[i + 1] = dict()
 
-    def set_rorder(self, n):
-        self.rorder = n
 
     def set_min_order(self, n):
         self.min_order = n
@@ -314,10 +308,10 @@ class Markov_random_n:
         self.threshold = x
 
     def add_frequency(self, sentences):
-        if self.lorder <= 0:
+        if self.order <= 0:
             raise ValueError("set order")
 
-        for o in range(1, self.lorder + 1):
+        for o in range(1, self.order + 1):
             for s in sentences:
                 n_gram = ["\\none"] * o
                 for i in range(len(s)):
@@ -347,7 +341,7 @@ class Markov_random_n:
         if self.rorder <= 0:
             raise ValueError("set order")
 
-        for o in range(1, self.lorder + 1):
+        for o in range(1, self.order + 1):
             for s in sentences:
                 s_reversed = reversed(s)
                 n_gram = ["\\none"] * o
@@ -375,11 +369,11 @@ class Markov_random_n:
                             self.transition_rev_f[o][seq][s_reversed[i + 1][0]] += 1
 
     def set_transition_probability(self):
-        if self.lorder <= 0:
+        if self.order <= 0:
             raise ValueError("set order")
 
         # 文頭となる確率
-        for o in range(1, self.lorder + 1):
+        for o in range(1, self.order + 1):
             sum = 0
             for i in self.begin_f[o]:
                 sum += self.begin_f[o][i]
@@ -397,11 +391,11 @@ class Markov_random_n:
                 self.transition_p[o][i] = nextword_probability
 
     def set_reverse_transition_probability(self):
-        if self.lorder <= 0:
+        if self.order <= 0:
             raise ValueError("set order")
 
         # 文頭となる確率
-        for o in range(1, self.lorder + 1):
+        for o in range(1, self.order + 1):
             sum = 0
             for i in self.begin_f[o]:
                 sum += self.begin_f[o][i]
@@ -420,12 +414,12 @@ class Markov_random_n:
 
     def recursive(self, current_n_gram):
         # 階数を乱択
-        order = random.randint(self.min_order, self.lorder)
+        order = random.randint(self.min_order, self.order)
         # print(current_n_gram)
         current_n_gram_split = current_n_gram.split(" ")
-        order_n_gram = current_n_gram_split[self.lorder - order]
+        order_n_gram = current_n_gram_split[self.order - order]
         for i in reversed(range(0, order - 1)):
-            order_n_gram += " " + current_n_gram_split[self.lorder - i - 1]
+            order_n_gram += " " + current_n_gram_split[self.order - i - 1]
         if order_n_gram not in self.transition_p[order]:
             return "\\faile"
         else:
@@ -446,7 +440,7 @@ class Markov_random_n:
                 if next_word == "。":
                     return next_word
                 # next_n_gramをorder分の長さに整える
-                for j in reversed(range(self.lorder - order)):
+                for j in reversed(range(self.order - order)):
                     next_n_gram = current_n_gram_split[j + 1] + " " + next_n_gram
                 result = self.recursive(next_n_gram)
                 if result != "\\faile":
@@ -454,12 +448,12 @@ class Markov_random_n:
             return "\\faile"
 
     def generate(self, number_of_trials):
-        if self.lorder <= 0:
+        if self.order <= 0:
             raise ValueError("set order")
 
         self.trial = number_of_trials
         current_n_gram = "\\none"
-        for i in range(1, self.lorder):
+        for i in range(1, self.order):
             current_n_gram += " " + "\\none"
 
         # 再帰的に文を生成する
@@ -469,15 +463,15 @@ class Markov_random_n:
             # 文頭を作る
             rund = random.random()
             accu = 0.0
-            for j in self.begin_p[self.lorder]:
-                accu += self.begin_p[self.lorder][j]
+            for j in self.begin_p[self.order]:
+                accu += self.begin_p[self.order][j]
                 if accu > rund:
-                    first_word = j.split(" ")[self.lorder - 1]
+                    first_word = j.split(" ")[self.order - 1]
                     n_gram = current_n_gram.split(" ")
                     n_gram.pop(0)
                     n_gram.append(first_word)
                     next_n_gram = n_gram[0]
-                    for k in range(1, self.lorder):
+                    for k in range(1, self.order):
                         next_n_gram += " " + n_gram[k]
                     break
             result = self.recursive(next_n_gram)
@@ -598,6 +592,6 @@ markov_data.set_transition_probability()
 markov_data.set_min_order(2)
 markov_data.set_threshold(0.0001)
 print("order: ",end="")
-print(markov_data.lorder)
+print(markov_data.order)
 for i in range(int(input("出力数"))):
     print(markov_data.generate(number_of_trials=10))
